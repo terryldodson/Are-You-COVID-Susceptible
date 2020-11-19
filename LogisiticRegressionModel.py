@@ -3,48 +3,7 @@ import numpy as np
 import pandas as pd
 import math
 from sklearn.preprocessing import StandardScaler
-
-class MultipleLinearRegression(object):
-    def __init__(self, epochs, alpha):
-        self.coefficients = np.array([0, 0, 0, 0, 0, 0, 0, 0])
-        self.epochs = epochs
-        self.alpha = alpha
-
-    def train(self, X, y, length):
-        cost_list = []
-        coeff_list = []
-        prediction_list = []
-
-        cost_list.append(1e10)
-        count = 0
-        while(count < self.epochs):
-            # Calculating cost
-            prediction = self.predict(X)
-            error = prediction - y
-            cost = 1/(2*length) * np.dot(error.T, error)
-            cost_list.append(cost)
-
-            #updating coefficients
-            self.coefficients = self.coefficients - (self.alpha * (1/length) * np.dot(X.T, error))
-            coeff_list.append(self.coefficients)
-
-            if cost_list[count]-cost_list[count+1] < 1e-9:
-                print('Ended on count: ', count)
-                count = self.epochs
-
-            count += 1
-        cost_list.pop(0)
-        return cost_list, coeff_list
-
-    def predict(self, X):
-        return np.dot(X, self.coefficients)
-
-    def r2_score(self, Y, Y_pred):
-        mean_y = np.mean(Y)
-        ss_tot = sum((Y - mean_y) ** 2)
-        ss_res = sum((Y - Y_pred) ** 2)
-        r2 = 1 - (ss_res / ss_tot)
-        return r2
+from sklearn.linear_model import LogisticRegression
 
 #Reading in the features from clean_data.csv
 data = pd.read_csv('clean_data.csv')
@@ -143,8 +102,6 @@ X_test = np.array([x0[row_split:l-1], current_status[row_split:l-1], sex[row_spl
 
 #Creating the y array
 y = np.array(death)
-#for i in y:
-#    print(i)
 
 #Scaling the data
 scaler = StandardScaler()
@@ -153,16 +110,31 @@ X_train = scaler.transform(X_train)
 scaler.fit(X_test)
 X_test = scaler.transform(X_test)
 
-#Learning rate and epochs
-alpha = 0.0025
-epochs = 3000
+logisticRegr = LogisticRegression()
+logisticRegr.fit(X_train, y[0:row_split])
 
-#Creating the learning model and training it
-model = MultipleLinearRegression(epochs, alpha)
-costs, coeffs = model.train(X_train, y[0:row_split], length_train)
-y_pred = model.predict(X_test)
-r2_score = model.r2_score(y[row_split:l-1], y_pred)
+y_pred = logisticRegr.predict(X_test)
+score = logisticRegr.score(X_test, y[row_split:l-1])
 
-print(model.coefficients)
-#print(model.predict(X_test))
-print(r2_score)
+index = row_split
+t_p = 0
+t_n = 0
+f_p = 0
+f_n = 0
+for i in y_pred:
+    print(i, end=" ")
+    if i == y[index]:
+        if i == 1:
+            t_p += 1
+        else:
+            t_n += 1
+    else:
+        if i == 1:
+            f_p += 1
+        else:
+            f_n += 1
+    index += 1
+print("\n")
+print(score)
+print("True Positive: ", t_p, "True Negative: ", t_n)
+print("False Positive: ", f_p, "False Negative: ", f_n)
