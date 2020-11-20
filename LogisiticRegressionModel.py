@@ -100,6 +100,7 @@ features = ['current_status', 'sex', 'age_group', 'Race and ethnicity (combined)
 X = np.array([current_status, sex, age_group, race_ethnicity, hospitalized, icu, med_condition]).T
 df = pd.DataFrame(data=X, columns=features)
 X = df.values
+print(X)
 
 X_train = np.array([x0[0:row_split], current_status[0:row_split], sex[0:row_split], \
                     age_group[0:row_split], race_ethnicity[0:row_split], hospitalized[0:row_split], \
@@ -144,13 +145,16 @@ for i in y_pred:
     index += 1
 print("\n")
 print(score)
+weights = logisticRegr.coef_[0]
+weights = np.delete(weights, 0)
+print("Weights: ", weights)
 print("True Positive: ", t_p, "True Negative: ", t_n)
 print("False Positive: ", f_p, "False Negative: ", f_n)
 
 pca = PCA(n_components=2)
 principalComponents = pca.fit_transform(X)
 principalDf = pd.DataFrame(data = principalComponents
-             , columns = ['principal component 1', 'principal component 2'])
+             , columns = ['pc1', 'pc2'])
 
 print()
 print("How much of our variance is explained?")
