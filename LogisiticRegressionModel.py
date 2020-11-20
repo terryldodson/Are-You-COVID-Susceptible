@@ -4,6 +4,7 @@ import pandas as pd
 import math
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
+from sklearn.decomposition import PCA
 
 #Reading in the features from clean_data.csv
 data = pd.read_csv('clean_data.csv')
@@ -93,6 +94,13 @@ x0 = np.ones(len(death))
 l = len(death)
 
 #Creating the array of features and transposing
+features = ['current_status', 'sex', 'age_group', 'Race and ethnicity (combined)', \
+            'hosp_yn', 'icu_yn', 'medcond_yn']
+
+X = np.array([current_status, sex, age_group, race_ethnicity, hospitalized, icu, med_condition]).T
+df = pd.DataFrame(data=X, columns=features)
+X = df.values
+
 X_train = np.array([x0[0:row_split], current_status[0:row_split], sex[0:row_split], \
                     age_group[0:row_split], race_ethnicity[0:row_split], hospitalized[0:row_split], \
                     icu[0:row_split], med_condition[0:row_split]]).T
@@ -138,3 +146,17 @@ print("\n")
 print(score)
 print("True Positive: ", t_p, "True Negative: ", t_n)
 print("False Positive: ", f_p, "False Negative: ", f_n)
+
+pca = PCA(n_components=2)
+principalComponents = pca.fit_transform(X)
+principalDf = pd.DataFrame(data = principalComponents
+             , columns = ['principal component 1', 'principal component 2'])
+
+print()
+print("How much of our variance is explained?")
+print(pca.explained_variance_ratio_)
+print()
+print()
+
+print("Which features matter most?")
+print(abs(pca.components_))
